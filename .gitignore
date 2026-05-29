@@ -10,8 +10,9 @@ node_modules/
 dist/
 build/
 
-# Uploads de usuários
-uploads/
+# Uploads de usuários (mantém a pasta, ignora o conteúdo)
+uploads/*
+!uploads/.gitkeep
 
 # Logs
 *.log
