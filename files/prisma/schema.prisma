@@ -1,0 +1,188 @@
+// =============================================================
+//  GBEducation — Prisma Schema
+//  Banco: PostgreSQL | ORM: Prisma
+// =============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================
+//  ENUM — Tipo de usuário
+// =============================================================
+
+enum TipoUsuario {
+  ALUNO
+  DOCENTE
+  ADMIN
+}
+
+// =============================================================
+//  MODEL — AreaConhecimento
+// =============================================================
+
+model AreaConhecimento {
+  id        String   @id @default(uuid())
+  nome      String   @unique
+  descricao String?
+
+  // Relações
+  cursos   Curso[]
+  usuarios Usuario[]
+
+  @@map("areas_conhecimento")
+}
+
+// =============================================================
+//  MODEL — Curso
+// =============================================================
+
+model Curso {
+  id        String @id @default(uuid())
+  nome      String
+  descricao String?
+
+  // FK → AreaConhecimento
+  areaConhecimentoId String
+  area               AreaConhecimento @relation(fields: [areaConhecimentoId], references: [id])
+
+  // Relações
+  disciplinas  Disciplina[]
+  docenteCurso DocenteCurso[]
+  materiais    Material[]
+
+  @@map("cursos")
+}
+
+// =============================================================
+//  MODEL — Disciplina
+// =============================================================
+
+model Disciplina {
+  id        String  @id @default(uuid())
+  nome      String
+  descricao String?
+
+  // FK → Curso
+  cursoId String
+  curso   Curso  @relation(fields: [cursoId], references: [id])
+
+  // Relações
+  temas     Tema[]
+  materiais Material[]
+
+  @@map("disciplinas")
+}
+
+// =============================================================
+//  MODEL — Tema
+// =============================================================
+
+model Tema {
+  id        String  @id @default(uuid())
+  nome      String
+  descricao String?
+
+  // FK → Disciplina
+  disciplinaId String
+  disciplina   Disciplina @relation(fields: [disciplinaId], references: [id])
+
+  // Relações
+  materiais Material[]
+
+  @@map("temas")
+}
+
+// =============================================================
+//  MODEL — Usuario
+// =============================================================
+
+model Usuario {
+  id        String      @id @default(uuid())
+  nome      String
+  email     String      @unique
+  senhaHash String
+  tipo      TipoUsuario @default(ALUNO)
+  criadoEm DateTime    @default(now())
+
+  // FK opcional → AreaConhecimento (usado por ALUNO)
+  areaConhecimentoId String?
+  area               AreaConhecimento? @relation(fields: [areaConhecimentoId], references: [id])
+
+  // Relações
+  docenteCurso DocenteCurso[]
+  materiais    Material[]
+
+  @@index([email])
+  @@index([tipo])
+  @@map("usuarios")
+}
+
+// =============================================================
+//  MODEL — DocenteCurso (tabela de vínculo)
+// =============================================================
+
+model DocenteCurso {
+  id String @id @default(uuid())
+
+  // FK → Usuario (Docente)
+  docenteId String
+  docente   Usuario @relation(fields: [docenteId], references: [id])
+
+  // FK → Curso
+  cursoId String
+  curso   Curso  @relation(fields: [cursoId], references: [id])
+
+  @@unique([docenteId, cursoId])
+  @@index([docenteId])
+  @@index([cursoId])
+  @@map("docente_cursos")
+}
+
+// =============================================================
+//  MODEL — Material
+// =============================================================
+
+model Material {
+  id           String   @id @default(uuid())
+  titulo       String
+  descricao    String?
+  arquivoUrl   String
+  tipoArquivo  String
+  tamanhoBytes Int      @default(0)
+  downloads    Int      @default(0)
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  // Soft delete
+  deletadoEm DateTime?
+
+  // FK → Usuario (Docente que fez upload)
+  docenteId String
+  docente   Usuario @relation(fields: [docenteId], references: [id])
+
+  // FK → Curso
+  cursoId String
+  curso   Curso  @relation(fields: [cursoId], references: [id])
+
+  // FK opcional → Disciplina
+  disciplinaId String?
+  disciplina   Disciplina? @relation(fields: [disciplinaId], references: [id])
+
+  // FK opcional → Tema
+  temaId String?
+  tema   Tema?  @relation(fields: [temaId], references: [id])
+
+  // Índices de busca
+  @@index([titulo])
+  @@index([descricao])
+  @@index([docenteId])
+  @@index([cursoId])
+  @@index([deletadoEm])
+  @@map("materiais")
+}

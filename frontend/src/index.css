@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* ── Tokens de tema (canais RGB para suporte a opacity modifier do Tailwind) ── */
+  :root {
+    --surface:        248 250 252;   /* slate-50  #f8fafc */
+    --surface-card:   255 255 255;   /* white     #ffffff */
+    --surface-border: 226 232 240;   /* slate-200 #e2e8f0 */
+    --surface-muted:  203 213 225;   /* slate-300 #cbd5e1 */
+    --body-bg-image:
+      radial-gradient(ellipse at 20% 10%, rgba(99,102,241,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(79,70,229,0.03) 0%, transparent 50%);
+  }
+
+  .dark {
+    --surface:        15 15 26;      /* #0f0f1a */
+    --surface-card:   23 23 42;      /* #17172a */
+    --surface-border: 42 42 69;      /* #2a2a45 */
+    --surface-muted:  58 58 92;      /* #3a3a5c */
+    --body-bg-image:
+      radial-gradient(ellipse at 20% 10%, rgba(99,102,241,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(79,70,229,0.06) 0%, transparent 50%);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    @apply bg-surface text-slate-800 dark:text-slate-100 font-sans antialiased;
+    background-image: var(--body-bg-image);
+    min-height: 100vh;
+  }
+
+  /* Transição suave ao trocar de tema */
+  .theme-transitioning,
+  .theme-transitioning *,
+  .theme-transitioning *::before,
+  .theme-transitioning *::after {
+    transition:
+      background-color 0.25s ease,
+      border-color 0.25s ease,
+      color 0.25s ease !important;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { @apply bg-surface; }
+  ::-webkit-scrollbar-thumb { @apply bg-surface-muted rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-brand-600; }
+}
+
+@layer components {
+  .card {
+    @apply bg-surface-card border border-surface-border rounded-2xl;
+  }
+
+  .input-base {
+    @apply w-full bg-surface border border-surface-border rounded-xl px-4 py-2.5
+           text-slate-800 dark:text-slate-100
+           placeholder-slate-400 dark:placeholder-slate-500 text-sm
+           focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent
+           transition-all duration-200;
+  }
+
+  .label-base {
+    @apply block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5;
+  }
+
+  .btn-primary {
+    @apply bg-brand-600 hover:bg-brand-500 text-white font-semibold
+           px-4 py-2.5 rounded-xl transition-all duration-200
+           shadow-glow hover:shadow-glow-lg active:scale-95
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none;
+  }
+
+  .btn-secondary {
+    @apply bg-surface-card border border-surface-border hover:border-brand-500
+           text-slate-700 dark:text-slate-300 hover:text-brand-700 dark:hover:text-white
+           font-semibold px-4 py-2.5 rounded-xl transition-all duration-200 active:scale-95
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-danger {
+    @apply bg-red-600/20 border border-red-500/30 hover:bg-red-600
+           text-red-600 dark:text-red-400 hover:text-white font-semibold
+           px-4 py-2.5 rounded-xl transition-all duration-200 active:scale-95
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply text-slate-600 dark:text-slate-400
+           hover:text-slate-900 dark:hover:text-white
+           hover:bg-surface-card font-medium px-4 py-2.5 rounded-xl
+           transition-all duration-200 active:scale-95
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+}
+
+@layer utilities {
+  /* ── Remapeamento de texto no tema claro ─────────────────────────────────── */
+  /* Elementos com text-white / text-slate-* ficam ilegíveis em fundo claro.    */
+  /* Estas regras têm especificidade maior (html:not(.dark) + classe) e ganham  */
+  /* dos utilitários Tailwind base sem precisar tocar cada componente.           */
+
+  html:not(.dark) .text-white,
+  html:not(.dark) .text-slate-50,
+  html:not(.dark) .text-slate-100 { color: rgb(15 23 42); }
+
+  html:not(.dark) .text-slate-200,
+  html:not(.dark) .text-slate-300 { color: rgb(51 65 85); }
+
+  html:not(.dark) .text-slate-400 { color: rgb(71 85 105); }
+
+  html:not(.dark) .text-slate-500 { color: rgb(100 116 139); }
+
+  /* Preserva text-white dentro de fundos coloridos (ex: badge de logo) */
+  html:not(.dark) :is(
+    [class*="bg-brand-"],
+    [class*="bg-violet-"],
+    [class*="bg-emerald-"],
+    [class*="bg-cyan-"],
+    [class*="bg-sky-"],
+    [class*="bg-amber-"],
+    [class*="bg-rose-"],
+    [class*="bg-red-"]
+  ) .text-white {
+    color: rgb(255 255 255);
+  }
+}
